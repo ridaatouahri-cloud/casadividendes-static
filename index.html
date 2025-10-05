@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CasaDividendes — Prototype statique (1 fichier)</title>
+  <meta name="description" content="CasaDividendes : calendrier des dividendes, palmarès, fiches sociétés, premium, blog, contact." />
+  <style>
+    /* ============================
+       CASA DIVIDENDES – GLOBAL UI
+       Single-file HTML (no build)
+       ============================ */
+    :root{
+      --bg:#0a0a0a; --bg2:#0f0f12; --card:#111113; --border:#232326;
+      --txt:#e5e7eb; --muted:#9ca3af; --teal:#2dd4bf; --orange:#fb923c;
+      --shadow:0 8px 28px rgba(0,0,0,.45)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;line-height:1.6}
+    a{color:var(--teal);text-decoration:none}
+    a:hover{color:var(--orange)}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    .section{padding:56px 0}
+    .card{background:rgba(17,17,19,.66);border:1px solid var(--border);border-radius:16px;padding:20px}
+    .card.alt{background:rgba(15,17,20,.6)}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:12px 18px;border-radius:12px;border:1px solid var(--border);background:#14161a;color:#fff;font-weight:600}
+    .btn:hover{filter:brightness(1.05)}
+    .btn.teal{background:var(--teal);border-color:transparent;color:#0b0f10}
+    .btn.orange{background:var(--orange);border-color:transparent;color:#0b0f10}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--teal);color:var(--teal);font-size:12px}
+    .badge.orange{border-color:var(--orange);color:var(--orange)}
+    .muted{color:var(--muted)}
+    h1,h2,h3{margin:0 0 10px 0;font-weight:700}
+
+    /* Header */
+    header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.9);backdrop-filter:saturate(1.1) blur(6px);border-bottom:1px solid var(--border)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:32px;height:32px;border-radius:16px;background:rgba(45,212,191,.18);display:grid;place-items:center}
+    .logo-mark{width:12px;height:12px;border:2px solid var(--teal);transform:rotate(45deg);border-radius:2px}
+    .brand-title{font-weight:700}
+    .navlinks{display:flex;gap:16px;flex-wrap:wrap}
+    .navlinks a{color:#cbd5e1}
+    .navlinks a.active,.navlinks a:hover{color:#fff}
+
+    /* Hero */
+    .hero{background:linear-gradient(180deg,#18181b, #0a0a0a);border-bottom:1px solid var(--border)}
+    .grid{display:grid;gap:24px}
+    .grid-2{grid-template-columns:1fr}
+    @media(min-width:900px){.grid-2{grid-template-columns:1.2fr .8fr}}
+
+    /* Tables */
+    table{border-collapse:collapse;width:100%}
+    .table thead th{background:#0f1115;color:#c9ced6}
+    .table th,.table td{padding:12px;border-top:1px solid var(--border);text-align:left}
+
+    /* KPI */
+    .kpis{display:grid;gap:16px}
+    @media(min-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}}
+    .kpi .t{color:var(--muted);font-size:13px}
+    .kpi .v{font-size:22px;font-weight:700;margin-top:4px}
+
+    /* Calendar */
+    .toolbar{display:grid;gap:12px;grid-template-columns:1fr}
+    @media(min-width:900px){.toolbar{grid-template-columns:2fr repeat(4,1fr)}}
+    .agenda{border:1px solid var(--border);border-radius:16px;background:#0f1115;padding:16px}
+    .agenda-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .day{min-height:96px;border:1px solid var(--border);border-radius:10px;background:#0b0b0e;padding:6px;font-size:11px;color:#8a8f98}
+    .event{display:inline-block;margin-top:6px;font-size:10px;padding:3px 6px;border-radius:999px;border:1px solid var(--teal);color:var(--teal)}
+    .event.orange{border-color:var(--orange);color:var(--orange)}
+
+    /* Footer */
+    footer{border-top:1px solid var(--border);margin-top:56px}
+    .foot{padding:28px 0;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:space-between}
+    @media(min-width:900px){.foot{flex-direction:row}}
+
+    /* Helpers */
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .input{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#0b0f12;color:#e5e7eb}
+    .hidden{display:none}
+    .center{display:grid;place-items:center}
+  </style>
+</head>
+<body>
+  <!-- ======= Header ======= -->
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo"><div class="logo-mark"></div></div>
+        <div class="brand-title">CasaDividendes</div>
+        <span class="badge" style="margin-left:8px">Beta</span>
+      </div>
+      <nav class="navlinks">
+        <a href="#home" class="active">Accueil</a>
+        <a href="#calendar">Calendrier</a>
+        <a href="#rankings">Palmarès</a>
+        <a href="#blog">Blog</a>
+        <a href="#premium">Premium</a>
+        <a href="#about">À propos & Contact</a>
+        <a href="#legal">Mentions</a>
+        <a href="#premium" class="btn orange" style="padding:8px 12px">Premium</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ======= Accueil / Hero ======= -->
+  <section id="home" class="hero section">
+    <div class="container grid grid-2">
+      <div>
+        <h1>CasaDividendes : la première plateforme dédiée aux dividendes de la Bourse de Casablanca</h1>
+        <p class="muted">Un calendrier clair, des fiches sociétés fiables et des outils concrets pour investir avec sérénité.</p>
+        <div class="row" style="margin-top:14px">
+          <a class="btn teal" href="#calendar">Voir le calendrier</a>
+          <a class="btn orange" href="#premium">Découvrir Premium</a>
+        </div>
+      </div>
+      <div class="card alt center" style="min-height:280px">
+        <div class="muted">Illustration</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Valeurs ======= -->
+  <section class="section">
+    <div class="container">
+      <div class="grid" style="grid-template-columns:1fr;gap:16px" id="values">
+        <div class="card">
+          <div style="font-size:28px">🧭</div>
+          <h3>Des données vérifiées</h3>
+          <p class="muted">Dates ex-dividende, paiements et historiques sourcés.</p>
+        </div>
+        <div class="card">
+          <div style="font-size:28px">🛠️</div>
+          <h3>Des outils utiles</h3>
+          <p class="muted">Palmarès, fiches, projections — l’essentiel, sans superflu.</p>
+        </div>
+        <div class="card">
+          <div style="font-size:28px">📚</div>
+          <h3>Pédagogie locale</h3>
+          <p class="muted">Articles clairs en FR/Darija pour éviter les pièges.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Palmarès – aperçu ======= -->
+  <section class="section">
+    <div class="container">
+      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Aperçu Palmarès</h2>
+        <a href="#rankings">Voir le palmarès complet</a>
+      </div>
+      <div class="card" style="overflow:auto">
+        <table class="table">
+          <thead><tr><th>Rang</th><th>Ticker</th><th>Société</th><th>Rendement</th><th>Paiement</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>IAM</td><td>Maroc Telecom</td><td><span class="badge">5.2%</span></td><td>28/06</td></tr>
+            <tr><td>2</td><td>BCP</td><td>Banque Populaire</td><td><span class="badge">4.8%</span></td><td>21/06</td></tr>
+            <tr><td>3</td><td>ATW</td><td>Attijariwafa Bank</td><td><span class="badge">4.3%</span></td><td>05/07</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Newsletter ======= -->
+  <section class="section">
+    <div class="container">
+      <div class="card row" style="align-items:center;justify-content:space-between">
+        <div>
+          <h3 style="margin:0 0 6px 0">Restez informé(e)</h3>
+          <div class="muted">Prochains dividendes, tendances & mises à jour.</div>
+        </div>
+        <div class="row">
+          <input class="input" type="email" placeholder="Entrez votre email" />
+          <a class="btn teal" href="#">Je m’inscris</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Bandeau Premium ======= -->
+  <section class="section" style="background:linear-gradient(90deg,#0a0a0a,#0f0f12)">
+    <div class="container row" style="align-items:center;justify-content:space-between">
+      <div style="font-weight:700">Passez au Premium : alertes J-3, scores de sécurité, comparateurs.</div>
+      <a class="btn orange" href="#premium">Essayer Premium</a>
+    </div>
+  </section>
+
+  <!-- ======= CALENDRIER ======= -->
+  <section id="calendar" class="section">
+    <div class="container">
+      <h2>Calendrier des dividendes (BVC)</h2>
+      <p class="muted">Prochaines <span style="color:var(--teal);font-weight:600">ex-dates</span>, paiements et montants. Données vérifiées.</p>
+
+      <div class="toolbar" style="margin-top:16px">
+        <div class="row">
+          <button id="prevMonth" class="btn">◀</button>
+          <div id="monthLabel" class="btn" style="background:#0f1115;border:1px solid var(--border);color:#cbd5e1">Mois AAAA</div>
+          <button id="nextMonth" class="btn">▶</button>
+        </div>
+        <select class="input" id="sector">
+          <option value="tous">Secteur (tous)</option>
+          <option>Banques</option><option>Télécom</option><option>Industrie</option><option>Immobilier</option>
+        </select>
+        <select class="input" id="dtype">
+          <option value="tous">Type (tous)</option>
+          <option>Ordinaire</option><option>Intérim</option><option>Spécial</option>
+        </select>
+        <button class="btn teal" id="apply">Appliquer</button>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis section" style="padding-top:16px;padding-bottom:0">
+        <div class="card kpi"><div class="t">Dividendes ce mois</div><div class="v">12</div></div>
+        <div class="card kpi"><div class="t">Rendement moyen attendu</div><div class="v">3.9%</div></div>
+        <div class="card kpi"><div class="t">Secteur le + actif</div><div class="v">Banques</div></div>
+      </div>
+
+      <!-- Switch view -->
+      <div class="row" style="margin-top:8px">
+        <button id="tabTable" class="btn" style="background:#0f1115">Tableau</button>
+        <button id="tabAgenda" class="btn" style="background:#0f1115">Calendrier</button>
+      </div>
+
+      <!-- Vue Tableau -->
+      <div id="viewTable" class="card" style="margin-top:16px;overflow:auto">
+        <table class="table">
+          <thead><tr>
+            <th>Ticker</th><th>Société</th><th>Secteur</th><th>Ex-date</th><th>Paiement</th><th>Montant</th><th>Badge</th><th>Alerte</th><th>Source</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Vue Agenda -->
+      <div id="viewAgenda" class="agenda hidden" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between;color:#cbd5e1;margin-bottom:6px">
+          <div id="agendaLabel">Mois AAAA</div>
+          <div class="row muted" style="font-size:12px"><span class="badge">Ordinaire</span><span class="badge" style="border-color:#60a5fa;color:#93c5fd">Intérim</span><span class="badge orange">Spécial</span></div>
+        </div>
+        <div class="agenda-grid" id="agendaGrid"></div>
+      </div>
+
+      <!-- Sources & pédagogie -->
+      <div class="grid" style="grid-template-columns:1fr;gap:16px;margin-top:16px">
+        <div class="card"><strong>Sources</strong><div class="muted">Bourse de Casablanca, communiqués officiels des émetteurs, avis d’AG.</div></div>
+        <div class="card"><strong>Pédagogie</strong><div class="muted">⚡ Ex-date = date à partir de laquelle l’achat ne donne plus droit au dividende.</div></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;background:linear-gradient(90deg,#0a0a0a,#0f0f12)">
+        <div class="row" style="align-items:center;justify-content:space-between">
+          <div style="font-weight:700">Débloquez les alertes J-3, l’export iCal/CSV et les vues avancées.</div>
+          <a class="btn orange" href="#premium">Essayer Premium</a>
+        </div>
+      </div>
+
+      <div class="muted" style="margin-top:10px;font-size:12px">⚠️ Informations fournies à titre indicatif. Référez-vous toujours à la source officielle.</div>
+    </div>
+  </section>
+
+  <!-- ======= PALMARES ======= -->
+  <section id="rankings" class="section">
+    <div class="container">
+      <h2>Palmarès des dividendes</h2>
+      <p class="muted">Comparez les sociétés selon le rendement, la régularité et la croissance.</p>
+      <div class="kpis" style="margin-top:16px">
+        <div class="card kpi"><div class="t">Rendement moyen</div><div class="v">4.1%</div></div>
+        <div class="card kpi"><div class="t">Top secteur</div><div class="v">Télécom</div></div>
+        <div class="card kpi"><div class="t">Meilleure régularité</div><div class="v">IAM (10 ans)</div></div>
+      </div>
+      <div class="card" style="margin-top:16px;overflow:auto">
+        <table class="table" id="rankTable">
+          <thead><tr><th>Rang</th><th>Ticker</th><th>Société</th><th>Div. TTM</th><th>Cours</th><th>Rendement</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= PREMIUM ======= -->
+  <section id="premium" class="section">
+    <div class="container">
+      <div class="grid" style="grid-template-columns:1fr;gap:24px">
+        <div>
+          <h2>Passez au Premium et maximisez vos dividendes</h2>
+          <p class="muted">Des alertes personnalisées, des scores de sécurité et des comparateurs avancés pour de meilleures décisions.</p>
+          <a class="btn orange" href="#">Je m’abonne</a>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr;gap:16px">
+          <div class="card"><strong>Alertes J-3</strong><div class="muted">Rappel avant l’ex-date sur vos titres favoris.</div></div>
+          <div class="card"><strong>Score sécurité</strong><div class="muted">Indicateur 0–100 basé sur payout, régularité, couverture.</div></div>
+          <div class="card"><strong>Simulations de revenus</strong><div class="muted">Projetez vos flux annuels selon votre capital.</div></div>
+          <div class="card"><strong>Comparateurs avancés</strong><div class="muted">Rendement, régularité, croissance en un clic.</div></div>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr;gap:16px;margin-top:16px">
+        <div class="card"><div style="font-weight:700">Mensuel</div><div style="font-size:28px;font-weight:700">49 MAD</div><a class="btn orange" href="#">Je m’abonne</a></div>
+        <div class="card"><div style="font-weight:700">Annuel</div><div style="font-size:28px;font-weight:700">490 MAD <span class="badge">2 mois offerts</span></div><a class="btn orange" href="#">Je m’abonne</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= BLOG ======= -->
+  <section id="blog" class="section">
+    <div class="container">
+      <div class="grid" style="grid-template-columns:1fr;gap:24px;align-items:center">
+        <div>
+          <h2>Blog & pédagogie</h2>
+          <p class="muted">Comprendre les dividendes et investir sereinement à la Bourse de Casablanca.</p>
+        </div>
+        <div class="card alt" style="min-height:180px"></div>
+      </div>
+      <div class="row" style="margin-top:12px;justify-content:space-between">
+        <div class="row">
+          <span class="btn" style="background:#0f1115">Bases</span>
+          <span class="btn" style="background:#0f1115">Stratégies</span>
+          <span class="btn" style="background:#0f1115">Marché Maroc</span>
+        </div>
+        <input class="input" placeholder="Rechercher…" style="width:240px"/>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr;gap:16px;margin-top:16px">
+        <article class="card"><div class="badge">En vedette</div><h3>Rendement vs sécurité : éviter les yield traps</h3><p class="muted">Un rendement élevé peut masquer une situation fragile…</p><a class="btn teal" href="#">Lire</a></article>
+        <article class="card"><div class="badge">Bases</div><h3>Comprendre l’ex-dividende en 3 minutes</h3><p class="muted">L’ex-date est la date à partir de laquelle l’achat ne donne plus droit au dividende…</p><a class="btn teal" href="#">Lire</a></article>
+        <article class="card"><div class="badge">Marché Maroc</div><h3>Lire un communiqué de dividende (AG, coupon)</h3><p class="muted">Les éléments clés à vérifier dans l’avis officiel…</p><a class="btn teal" href="#">Lire</a></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= À PROPOS & CONTACT ======= -->
+  <section id="about" class="section">
+    <div class="container">
+      <h2>À propos & Contact</h2>
+      <div class="kpis" style="margin-top:16px">
+        <div class="card"><div class="muted">Mission</div><div style="font-weight:700">Fiabilité • Pédagogie • Accès</div><div class="muted">Démocratiser l’investissement en dividendes au Maroc.</div></div>
+        <div class="card"><div class="muted">Vision</div><div style="font-weight:700">Référence BVC</div><div class="muted">Devenir le hub des dividendes à Casablanca.</div></div>
+        <div class="card"><div class="muted">Transparence</div><div style="font-weight:700">Sources officielles</div><div class="muted">BVC & communiqués émetteurs.</div></div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr;gap:16px;margin-top:16px">
+        <div class="card">
+          <strong>Contactez-nous</strong>
+          <div class="row" style="margin-top:10px;flex-direction:column">
+            <input class="input" placeholder="Nom"/>
+            <input class="input" placeholder="Email"/>
+            <input class="input" placeholder="Sujet"/>
+            <textarea class="input" placeholder="Message" rows="5"></textarea>
+            <a class="btn teal" href="#">Envoyer</a>
+          </div>
+        </div>
+        <div class="card">
+          <strong>Coordonnées</strong>
+          <ul class="muted">
+            <li>✉️ contact@casadividendes.com</li>
+            <li>🔗 LinkedIn / Twitter (optionnel)</li>
+            <li>📍 Casablanca</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= MENTIONS ======= -->
+  <section id="legal" class="section">
+    <div class="container">
+      <h2>Mentions légales & CGU</h2>
+      <div class="grid" style="grid-template-columns:1fr;gap:16px;margin-top:10px">
+        <div class="card"><strong>Mentions légales</strong><p class="muted">Éditeur : CasaDividendes • Directeur de publication • Hébergeur : o2switch • © CasaDividendes.</p></div>
+        <div class="card"><strong>CGU</strong><ul>
+          <li>Objet & acceptation</li>
+          <li>Accès au service</li>
+          <li>Abonnements : gratuit / premium</li>
+          <li>Sources & limites (pas de conseil d’investissement)</li>
+          <li>Disponibilité & responsabilité</li>
+          <li>Résiliation • Loi applicable</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Footer ======= -->
+  <footer>
+    <div class="container foot">
+      <nav class="navlinks" style="flex-wrap:wrap">
+        <a href="#home">Accueil</a>
+        <a href="#calendar">Calendrier</a>
+        <a href="#rankings">Palmarès</a>
+        <a href="#blog">Blog</a>
+        <a href="#premium">Premium</a>
+        <a href="#about">À propos & Contact</a>
+        <a href="#legal">Mentions</a>
+      </nav>
+      <div class="muted">© <span id="y"></span> CasaDividendes. Tous droits réservés.</div>
+    </div>
+  </footer>
+
+  <script>
+    // ======= Helpers =======
+    const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+    // Year in footer
+    $('#y').textContent = new Date().getFullYear();
+
+    // Smooth scroll + active state
+    $$('.navlinks a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', e=>{
+        const id = a.getAttribute('href');
+        const el = $(id);
+        if(el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth',block:'start'}); }
+        $$('.navlinks a').forEach(x=>x.classList.remove('active')); a.classList.add('active');
+      });
+    });
+
+    // ======= Calendar demo data =======
+    const rows = [
+      { t:'IAM', n:'Maroc Telecom', date:new Date(2025,5,12), pay:'28/06', amt:'4.010 MAD', src:'Communiqué', sector:'Télécom', kind:'Ordinaire', badge:'Rendement ↑', premium:true },
+      { t:'ATW', n:'Attijariwafa Bank', date:new Date(2025,5,5),  pay:'21/06', amt:'15.000 MAD', src:'AG',         sector:'Banques', kind:'Ordinaire', badge:'Alertes 🔔', premium:false },
+      { t:'BCP', n:'Banque Populaire',  date:new Date(2025,5,3),  pay:'18/06', amt:'7.000 MAD',  src:'Communiqué', sector:'Banques', kind:'Spécial',   badge:'Spécial',   premium:true },
+      { t:'SNEP',n:'SNEP',             date:new Date(2025,5,15), pay:'01/07', amt:'5.500 MAD',  src:'Communiqué', sector:'Industrie',kind:'Intérim',  badge:'Intérim',  premium:false },
+      { t:'ADI', n:'Addoha',           date:new Date(2025,6,4),  pay:'20/07', amt:'1.200 MAD',  src:'Communiqué', sector:'Immobilier',kind:'Ordinaire',badge:'Nouveau',  premium:false },
+    ];
+
+    function fmt(d){return String(d.getDate()).padStart(2,'0')+"/"+String(d.getMonth()+1).padStart(2,'0');}
+
+    // Month controls
+    const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    let cur = new Date();
+    const monthLabel = $('#monthLabel');
+    const agendaLabel = $('#agendaLabel');
+    function updateMonthLabels(){
+      const s = monthNames[cur.getMonth()]+' '+cur.getFullYear();
+      monthLabel.textContent = s; agendaLabel.textContent = s;
+      renderTable(); renderAgenda();
+    }
+    $('#prevMonth').addEventListener('click',()=>{ cur.setMonth(cur.getMonth()-1); updateMonthLabels(); });
+    $('#nextMonth').addEventListener('click',()=>{ cur.setMonth(cur.getMonth()+1); updateMonthLabels(); });
+
+    // Filters (demo only)
+    $('#apply').addEventListener('click',()=>{ renderTable(); renderAgenda(); });
+
+    // Toggle views
+    const vTable = $('#viewTable'), vAgenda = $('#viewAgenda');
+    $('#tabTable').addEventListener('click',()=>{ vTable.classList.remove('hidden'); vAgenda.classList.add('hidden'); });
+    $('#tabAgenda').addEventListener('click',()=>{ vAgenda.classList.remove('hidden'); vTable.classList.add('hidden'); });
+
+    function applyFilters(list){
+      const s = $('#sector').value, k = $('#dtype').value;
+      return list.filter(r => (s==='tous'||r.sector===s) && (k==='tous'||r.kind===k) && r.date.getMonth()===cur.getMonth() && r.date.getFullYear()===cur.getFullYear());
+    }
+
+    // Render table
+    function renderTable(){
+      const tb = $('#tbody'); tb.innerHTML='';
+      applyFilters(rows).forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.t}</td><td>${r.n}</td><td>${r.sector}</td><td>${fmt(r.date)}</td><td>${r.pay}</td><td style="color:var(--teal);font-weight:600">${r.amt}</td><td><span class="badge ${r.badge==='Spécial'?'orange':''}">${r.badge}</span></td><td>${r.premium? '🔔 <span class="muted" style="font-size:12px">(Premium)</span>':'<span class="btn" style="background:#0f1115">Activer</span>'}</td><td><a href="#" class="muted">${r.src}</a></td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    // Render agenda
+    function renderAgenda(){
+      const grid = $('#agendaGrid'); grid.innerHTML='';
+      const y = cur.getFullYear(), m = cur.getMonth();
+      const first = new Date(y,m,1); const startDay = (first.getDay()+6)%7; // Monday=0
+      const days = new Date(y,m+1,0).getDate();
+      // blanks before
+      for(let i=0;i<startDay;i++) grid.appendChild(cell(''));
+      for(let d=1; d<=days; d++){
+        const c = cell(d);
+        const evs = applyFilters(rows).filter(r=> r.date.getDate()===d);
+        evs.forEach(ev=>{
+          const tag = document.createElement('div');
+          tag.className = 'event'+(ev.kind==='Spécial'?' orange':'');
+          tag.textContent = `${ev.t} • ${ev.amt}`;
+          c.appendChild(tag);
+        });
+        grid.appendChild(c);
+      }
+      function cell(d){
+        const el = document.createElement('div'); el.className='day';
+        const lb = document.createElement('div'); lb.textContent = d||''; lb.style.fontSize='11px'; lb.style.color='#9ca3af';
+        el.appendChild(lb); return el;
+      }
+    }
+
+    // Rankings table (demo)
+    (function(){
+      const tbody = $('#rankTable tbody');
+      const companies = ['IAM','BCP','ATW','ADI','BCI','SNEP'];
+      const names = ['Maroc Telecom','Banque Populaire','Attijariwafa Bank','Addoha','BOA CI','SNEP'];
+      for(let i=0;i<10;i++){
+        const t = companies[i%companies.length];
+        const n = names[i%names.length];
+        const d = (3+Math.random()*3).toFixed(2)+'%';
+        const c = (100+Math.random()*200).toFixed(2)+' MAD';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${t}</td><td>${n}</td><td>${d}</td><td>${c}</td><td style="color:var(--teal);font-weight:600">${d}</td>`;
+        tbody.appendChild(tr);
+      }
+    })();
+
+    // Initial layout tweaks
+    (function gridColumns(){
+      const values = $('#values');
+      function setCols(){ values.style.gridTemplateColumns = window.innerWidth>900? 'repeat(3,1fr)':'1fr'; }
+      setCols(); window.addEventListener('resize', setCols);
+    })();
+
+    // Kickoff calendar render
+    updateMonthLabels();
+  </script>
+</body>
+</html>
